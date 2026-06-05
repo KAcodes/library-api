@@ -1,6 +1,9 @@
 from enum import Enum
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
+from requests import get
+from pprint import pprint
+
 
 
 class BookUnavailableError(Exception):
@@ -15,6 +18,7 @@ class UnauthorizedReturnError(Exception):
 class MaxLoansReachedError(Exception):
     pass
 
+OPEN_LIBRARY_URL = "https://openlibrary.org/search.json"
 
 class Book:
     def __init__(self, title: str, author: str, isbn: str):
@@ -59,6 +63,9 @@ class Library:
     def add_book(self, book: Book):
         self.books.append(book)
 
+
+    def find_all_books(self):
+        return self.books
 
     def is_user_permitted(self, user: User) -> bool:
         return len(self.get_active_loans_for_user(user)) < self.MAX_BOOKS
@@ -116,7 +123,13 @@ class Library:
     
    
 
+def retrieve_api_books(url: str, topic: str):
+    response = get(f"{url}?q={topic}&limit=5")
+    data = response.json()
+    return data.get('docs')
 
+
+# pprint(retrieve_api_books(OPEN_LIBRARY_URL, "football"))
 
 
 # book1 = Book("Harry Potter 1", "JK Rowling", "12345")
