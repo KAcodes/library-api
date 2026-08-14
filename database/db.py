@@ -27,15 +27,23 @@ def create_table():
     """
     )
 
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id TEXT PRIMARY KEY,
-            name TEXT NOT NULL
-        )
-    """)
+    cur.execute("DROP TABLE IF EXISTS USERS")
 
     cur.execute("""
-        CREATE TABLE IF NOT EXISTS loans (
+        CREATE TABLE IF NOT EXISTS USERS (
+            id TEXT PRIMARY KEY,
+            first_name TEXT NOT NULL,
+            last_name TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            phone TEXT
+        );
+    """)
+
+
+    cur.execute("DROP TABLE IF EXISTS LOANS")
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS LOANS (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id TEXT NOT NULL,
             book_id INTEGER NOT NULL,
@@ -44,7 +52,7 @@ def create_table():
             returned_at TEXT,
             FOREIGN KEY (user_id) REFERENCES users(id),
             FOREIGN KEY (book_id) REFERENCES books(id)
-        )
+        );
     """)
 
     con.commit()
