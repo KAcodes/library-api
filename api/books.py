@@ -4,7 +4,6 @@ from fastapi import APIRouter
 from dependencies import library_service
 
 
-
 router = APIRouter(
     prefix="/books",
     tags=["books"]
@@ -31,15 +30,15 @@ def get_all_books():
 
 @router.get("/fetch-book")
 def retrieve_one_book(id: str):
-    result = retrieve_book(id)
+    result = library_service.get_singular_book(id)
 
     book = {
         "book": 
             {
-                "id": result[0],
-                "title": result[1],
-                "author": result[2],
-                "isbn": result[3],
+                "id": result["id"],
+                "title": result["title"],
+                "author": result["author"],
+                "isbn": result["isbn"],
             }
     }
 
@@ -56,9 +55,9 @@ def import_books(topic: str):
     }
 
 
-@router.delete("/books/delete")
+@router.delete("/delete")
 def import_books(id: str):
-    delete_book(id)
+    library_service.delete_book(id)
 
     return {
         "status": "Book deleted"

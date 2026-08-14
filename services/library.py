@@ -69,8 +69,13 @@ class LibraryService:
             self.loan_repository = loan_repository
 
 
+    def get_singular_book(self, id: str):
+        return self.book_repository.retrieve_book(id) 
+
+
     def get_all_books(self):
-            return self.book_repository.fetch_all_books()
+        return self.book_repository.fetch_all_books()
+
 
     def transform_books(self, books: list) -> list:
         books_cleaned = []
@@ -84,18 +89,20 @@ class LibraryService:
 
         return books_cleaned
 
+
     def import_books(self, topic):
         books = retrieve_api_books(topic)
         cleaned_books = self.transform_books(books)
         returned_count = self.book_repository.populate_table(cleaned_books)
         return returned_count
 
+
+    def delete_book(self, id: str):
+            return self.book_repository.delete_book(id) 
+
     # def add_book(self, book: Book):
     #     self.books.append(book)
 
-
-    # def find_all_books(self):
-    #     return self.books
 
     # def is_user_permitted(self, user: User) -> bool:
     #     return len(self.get_active_loans_for_user(user)) < self.MAX_BOOKS
