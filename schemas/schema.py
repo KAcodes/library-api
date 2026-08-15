@@ -24,3 +24,17 @@ class UserResponse(BaseModel):
 
 class BookImportRequest(BaseModel):
     topic: str
+
+
+class LoanResponse(BaseModel):
+    loan_id: int
+    book_id: str
+    user_id: str
+    borrowed_at: str
+    due_date: str
+    returned_at: None | str
+
+
+class CreateLoanRequest(BaseModel):
+    user_id: str
+    book_id: str

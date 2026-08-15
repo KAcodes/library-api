@@ -27,7 +27,7 @@ def create_table():
     """
     )
 
-    cur.execute("DROP TABLE IF EXISTS USERS")
+    # cur.execute("DROP TABLE IF EXISTS USERS")
 
     cur.execute("""
         CREATE TABLE IF NOT EXISTS USERS (
@@ -40,7 +40,7 @@ def create_table():
     """)
 
 
-    cur.execute("DROP TABLE IF EXISTS LOANS")
+    # cur.execute("DROP TABLE IF EXISTS LOANS")
 
     cur.execute("""
         CREATE TABLE IF NOT EXISTS LOANS (

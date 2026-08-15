@@ -30,12 +30,13 @@ class User:
 
 
 class Loan:
-    def __init__(self, book: Book, user: User, days=14):
-        self.book = book
-        self.user = user
-        self.borrowed_at = datetime.now()
-        self.due_date = self.borrowed_at + timedelta(days=days)
-        self.returned_at: datetime | None = None
+    def __init__(self, id: str, book_id: str, user_id: str, borrowed_at: str, due_date: str, returned_at: str | None):
+        self.id = id
+        self.book_id = book_id
+        self.user_id = user_id
+        self.borrowed_at = borrowed_at
+        self.due_date = due_date
+        self.returned_at = returned_at
 
     @property
     def is_active(self) -> bool:
