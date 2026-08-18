@@ -7,26 +7,8 @@ from repositories.loans import LoanRepository
 from clients.open_library import retrieve_api_books, transform_books
 from clients.random_user import retrieve_api_users, transform_users
 from models.models import Book, User, Loan
+from services.errors import *
 
-
-
-class BookUnavailableError(Exception):
-    pass
-
-class BookNotFoundError(Exception):
-    pass
-
-class UserNotFoundError(Exception):
-    pass
-
-class UserBorrowLimitExceeded(Exception):
-    pass
-
-class UnauthorizedReturnError(Exception):
-    pass
-
-class MaxLoansReachedError(Exception):
-    pass
 
 
 class LibraryService:
@@ -81,90 +63,66 @@ class LibraryService:
         return self.user_repository.delete_user(id)
 
 
+    def get_loans(
+        self,
+        active: bool | None = None,
+        user_id: str | None = None,
+        book_id: str | None = None,
+    ) -> list[Loan]:
+        return self.loan_repository.fetch_loans(
+            active=active,
+            user_id=user_id,
+            book_id=book_id,
+        )
 
-    def borrow_book(self, book_id: str, user_id: str):
+
+    def get_specific_loan(self, loan_id: int) -> Loan | None:
+        loan = self.loan_repository.fetch_loan_by_id(loan_id)
+
+        if loan is None:
+            raise LoanNonExistent(f"Loan doesn't exist in our records.")   
+
+        return loan 
+
+
+    def borrow_book(self, book_id: str, user_id: str) -> Loan | None:
         book = self.book_repository.retrieve_book(book_id)
         user = self.user_repository.retrieve_user(user_id)
 
         if book is None:
-            raise BookNotFoundError(...)
+            raise BookNotFoundError(f"Book ID {book_id} doesn't exist.")
 
         if user is None:
-            raise UserNotFoundError(...)
+            raise UserNotFoundError(f"User ID {user_id} doesn't exist.")
 
         active_loan = self.loan_repository.fetch_active_loan_for_book(book_id)
 
         if active_loan is not None:
-            raise BookUnavailableError(...)
+            raise BookUnavailableError(
+                f"{book.title} is not available to loan."
+            )
 
-        active_loans = self.loan_repository.fetch_active_loans_for_user(user_id)
+        active_loans_for_user = self.get_loans(active=True, user_id=user_id, book_id=None)
 
-        if len(active_loans) >= self.MAX_BOOKS:
-            raise MaxLoansReachedError(...)
+        if len(active_loans_for_user) >= self.MAX_BOOKS:
+            raise MaxLoansReachedError(f"{user.first_name} currrently has {len(active_loans_for_user)} books borrowed. You can only borrow a maximum of {self.MAX_BOOKS} books at once.")
 
         return self.loan_repository.create_loan(
             book_id=book_id,
             user_id=user_id,
         )
-        if self.get_active_loan_for_book(book) is None:
-            if self.is_user_permitted(user):
-                new_loan = Loan(book, user)
-                self.loans.append(new_loan)
-                self.store_user(user)
-            else:
-                raise MaxLoansReachedError(f"{user.name} currrently has {len(self.get_active_loans_for_user(user))} books borrowed. You can only borrow a maximum of {self.MAX_BOOKS} books at once.")
-        else:
-            raise BookUnavailableError(f"{book.title} is not available.")
 
 
-    def get_all_loans(self) -> list[Loan]:
-            return self.loan_repository.fetch_all_loans()
+    def return_book(self, loan_id: int) -> Loan | None:
+        loan = self.loan_repository.fetch_loan_by_id(loan_id)
 
-    
-    def get_active_loans_for_user(self, user_id: str) -> list[Loan]:
-        return self.loan_repository.fetch_loans_for_user(user_id)
+        if loan is None:
+            raise LoanNonExistent(f"Loan doesn't exist in our records.")
 
+        returned_loan = self.loan_repository.end_loan(loan_id)
 
-    def is_user_permitted(self, user: User) -> bool:
-        return len(self.get_active_loans_for_user(user)) < self.MAX_BOOKS
-
-
-    
-    
-        # def get_active_loans(self) -> list[Loan]:
-        #     return [loan for loan in self.loans if loan.is_active]
-    
-    
+        if returned_loan is None:
+            raise BookAlreadyReturned(f"Book is not currently out on loan.")
+        return returned_loan
         
-    
-    
-        # def return_book(self, user: User, book: Book):
-        #     current_loan = self.get_active_loan_for_book(book)
-        #     if current_loan is None or current_loan.user != user:
-        #         raise ValueError(f"{user.name} doesn't currently possess {book.title}.")
-        #     else:
-        #         current_loan._return_book()
-        #         return f"{user.name} successfully returned {book.title}."
-    
-        
-        
-    
-    
-        # def get_active_loan_for_book(self, book: Book) -> Loan | None:
-        #     for loan in self.get_active_loans():
-        #         if loan.book == book:
-        #             return loan
-        #     return None
-    
-    
-        # def find_available_books(self) -> list[Book]:
-        #     loaned_books = [loan.book for loan in self.get_active_loans()]
-        #     return [book for book in self.books if book not in loaned_books]
-        
-    
-        # def store_user(self, user: User):
-        #     user_id = user.user_id
-        #     if self.users.get(user_id) is None:
-        #         self.users[user_id] = user
-
        
